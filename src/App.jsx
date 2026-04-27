@@ -33,7 +33,7 @@ const defaultState = {
   passiveIncome: 0,
   multiplier: 1,
   combo: 1,
-  duiktcoins: 0,
+  catCoins: 0,
   currentSkin: 1,
   unlockedSkins: [1],
   achievements: [],
@@ -53,6 +53,7 @@ export default function App() {
       return {
         ...defaultState,
         ...parsed,
+        catCoins: parsed.catCoins ?? parsed.duiktcoins ?? 0,
         treats: parsed.treats + offlineIncome,
       };
     }
@@ -66,17 +67,19 @@ export default function App() {
   const [incomeBlocked, setIncomeBlocked] = useState(false);
   const [bonusActive, setBonusActive] = useState(false);
   const [popups, setPopups] = useState([]);
+  const [catClickAnimation, setCatClickAnimation] = useState(false);
 
-  const prestigeMultiplier = 1 + game.duiktcoins * 0.1;
+  const prestigeMultiplier = 1 + game.catCoins * 0.1;
   const activeCat = catSkins.find((cat) => cat.id === game.currentSkin);
 
   useEffect(() => {
-    const saveData = {
-      ...game,
-      lastSave: Date.now(),
-    };
-
-    localStorage.setItem("catClickerSave", JSON.stringify(saveData));
+    localStorage.setItem(
+      "catClickerSave",
+      JSON.stringify({
+        ...game,
+        lastSave: Date.now(),
+      })
+    );
   }, [game]);
 
   useEffect(() => {
@@ -96,7 +99,7 @@ export default function App() {
 
   useEffect(() => {
     checkAchievements();
-  }, [game.treats, game.unlockedSkins, game.duiktcoins]);
+  }, [game.treats, game.unlockedSkins, game.catCoins]);
 
   const updateGame = (changes) => {
     setGame((prev) => ({
@@ -105,8 +108,32 @@ export default function App() {
     }));
   };
 
+  const playClickSound = () => {
+    const audioContext = new AudioContext();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(650, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.08);
+
+    gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.12);
+  };
+
   const handleClick = () => {
     if (clickBlocked) return;
+
+    playClickSound();
+
+    setCatClickAnimation(true);
+    setTimeout(() => setCatClickAnimation(false), 250);
 
     const earned =
       game.clickValue * game.multiplier * game.combo * prestigeMultiplier;
@@ -283,13 +310,13 @@ export default function App() {
 
     setGame({
       ...defaultState,
-      duiktcoins: game.duiktcoins + earnedCoins,
+      catCoins: game.catCoins + earnedCoins,
       currentSkin: game.currentSkin,
       unlockedSkins: game.unlockedSkins,
       achievements: game.achievements,
     });
 
-    setMessage(`🌟 Престиж виконано! Отримано ${earnedCoins} Duiktcoins.`);
+    setMessage(`🌟 Престиж виконано! Отримано ${earnedCoins} CatCoins 🐾`);
   };
 
   const resetGame = () => {
@@ -312,7 +339,7 @@ export default function App() {
     if (game.treats >= 5000) addAchievement("5000 ласощів");
     if (game.unlockedSkins.length >= 2) addAchievement("Перший новий котик");
     if (game.unlockedSkins.length >= 3) addAchievement("Колекціонер котиків");
-    if (game.duiktcoins >= 1) addAchievement("Перший престиж");
+    if (game.catCoins >= 1) addAchievement("Перший престиж");
   };
 
   return (
@@ -331,7 +358,9 @@ export default function App() {
       <section className="card main-card">
         <p className="label">Котячий баланс</p>
         <h2>{Math.floor(game.treats)} ласощів 🐟</h2>
-        <p className="duikt">Duiktcoins: {game.duiktcoins} | бонус доходу: x{prestigeMultiplier.toFixed(1)}</p>
+        <p className="catcoins">
+          CatCoins: {game.catCoins} 🐾 | бонус доходу: x{prestigeMultiplier.toFixed(1)}
+        </p>
 
         <div className="cat-area">
           {popups.map((popup) => (
@@ -341,7 +370,9 @@ export default function App() {
           ))}
 
           <button
-            className={clickBlocked ? "cat-btn blocked" : "cat-btn"}
+            className={`${clickBlocked ? "cat-btn blocked" : "cat-btn"} ${
+              catClickAnimation ? "cat-clicked" : ""
+            }`}
             onClick={handleClick}
           >
             <img src={activeCat.image} alt={activeCat.name} />
@@ -426,8 +457,8 @@ export default function App() {
       <section className="card prestige-card">
         <h2>🌟 Престиж</h2>
         <p>
-          Скинь основний прогрес і отримай Duiktcoins.  
-          1 Duiktcoin дає +10% до доходу.
+          Скинь основний прогрес і отримай CatCoins 🐾.  
+          1 CatCoin дає +10% до доходу.
         </p>
         <button className="prestige-btn" onClick={prestige}>
           Виконати престиж

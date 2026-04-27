@@ -413,3 +413,29 @@ h1 {
   border-radius: 999px;
   font-weight: bold;
 }
+.catcoins {
+  color: #9b5c8f;
+  font-weight: bold;
+}
+
+.cat-clicked {
+  animation: catBounce 0.25s ease;
+}
+
+@keyframes catBounce {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(0.88) rotate(-4deg);
+  }
+
+  70% {
+    transform: scale(1.08) rotate(4deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
