@@ -131,9 +131,13 @@ export default function App() {
   const handleClick = () => {
     if (clickBlocked) return;
 
-    const playClickSound = () => {
+   const playClickSound = () => {
   const audio = new Audio(meowSound);
-  audio.volume = 0.3; // можеш змінити 0.1 - 1
+  audio.volume = 0.3;
+
+  // трохи змінюємо швидкість звуку
+  audio.playbackRate = 0.9 + Math.random() * 0.2;
+
   audio.play();
 };
 
