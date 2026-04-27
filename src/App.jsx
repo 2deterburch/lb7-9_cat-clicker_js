@@ -4,6 +4,7 @@ import "./App.css";
 import cat1 from "./assets/cat1.webp";
 import cat2 from "./assets/cat2.png";
 import cat3 from "./assets/cat3.png";
+import meowSound from "./assets/meow1.mp3";
 
 const catSkins = [
   {
@@ -131,24 +132,9 @@ export default function App() {
     if (clickBlocked) return;
 
     const playClickSound = () => {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const audioContext = new AudioContext();
-
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  oscillator.type = "triangle";
-  oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
-  oscillator.frequency.linearRampToValueAtTime(850, audioContext.currentTime + 0.08);
-
-  gain.gain.setValueAtTime(0.25, audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
-
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + 0.15);
+  const audio = new Audio(meowSound);
+  audio.volume = 0.3; // можеш змінити 0.1 - 1
+  audio.play();
 };
 
     setCatClickAnimation(true);
